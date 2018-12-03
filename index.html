@@ -1,466 +1,948 @@
-﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"> <html lang="zh-CN">
-
-<head>
-
-    <title>网站维护中，请稍后访问</title>
-<link rel="shortcut icon" href="#">
-    <meta http-equiv="content-type" content="text/html;charset=utf-8">
-
-    <meta http-equiv="content-language" content="zh-CN">
-<link rel="stylesheet" href="css/buttons.css">
-    <style type="text/css">
-
-        body {margin:0;padding:0;background-color:#000000;font-size:0;overflow:hidden}
-
-        div {margin:0;padding:0;position:absolute;font-size:0;overflow:hidden}
-
-        canvas{background-color:#000000;overflow:hidden}
-
-    </style>
-
-</head>
-
-<style type="text/css">
-body{cursor:url(../images/default.cur),default;}
-a:hover,li:hover,img:hover{cursor:url(../images/link.cur),pointer;}
-</style>
-<style>
-*{margin: 0;padding: 0;}
-#container {
-	position: absolute;
-	height: 100%;
-	width: 100%;
-}
-#output {
-	width: 100%;
-	height: 100%;
-}
-.color{
-	width: 120px;
-	height: 20px;
-	margin: 0 auto;
-	position: fixed;
-	left: 50%;
-	margin-left: -60px;
-	bottom: 20px;
-}
-.cs{
-	width: 100%;
-	height: 100%;
-	margin: 0 auto;
-	position: absolute;
-	text-align:center;
-}
-
-img#logo {
-    width: 128px;
-    background-size: cover;
-    border-radius: 200px;
-    box-shadow: 0px 0px 40px rgba(63, 81, 181, 0.72);
-    border: 3px solid #00a0ff;
-    opacity: 1;
-    margin: 0 auto;
-    margin-top: 20px;
-	margin-bottom: 20px;
-	transition: all 1.0s;  
-}
-#logo:hover {
-    box-shadow: 0 0 10px #fff;
-    -webkit-box-shadow: 0 0 19px #fff;
-    transform:rotate(360deg);
-    -ms-transform:rotate(360deg); 	/* IE 9 */
-    -moz-transform:rotate(360deg); 	/* Firefox */
-    -webkit-transform:rotate(360deg); /* Safari 和 Chrome */
-    -o-transform:rotate(360deg); 	/* Opera */
-    filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
-}
-</style>
-
-
-
-<script type="text/javascript">
-
-    function $i(id) { return document.getElementById(id); }
-
-    function $r(parent,child) { (document.getElementById(parent)).removeChild(document.getElementById(child)); }
-
-    function $t(name) { return document.getElementsByTagName(name); }
-
-    function $c(code) { return String.fromCharCode(code); }
-
-    function $h(value) { return ('0'+Math.max(0,Math.min(255,Math.round(value))).toString(16)).slice(-2); }
-
-    function _i(id,value) { $t('div')[id].innerHTML+=value; }
-
-    function _h(value) { return !hires?value:Math.round(value/2); }
-
-    function get_screen_size()
-
-    {
-
-        var w=document.documentElement.clientWidth;
-
-        var h=document.documentElement.clientHeight;
-
-        return Array(w,h);
-
-    }
-
-    var url=document.location.href;
-
-    var flag=true;
-
-    var test=true;
-
-    var n=parseInt((url.indexOf('n=')!=-1)?url.substring(url.indexOf('n=')+2,((url.substring(url.indexOf('n=')+2,url.length)).indexOf('&')!=-1)?url.indexOf('n=')+2+(url.substring(url.indexOf('n=')+2,url.length)).indexOf('&'):url.length):512);
-
-    var w=0;
-
-    var h=0;
-
-    var x=0;
-
-    var y=0;
-
-    var z=0;
-
-    var star_color_ratio=0;
-
-    var star_x_save,star_y_save;
-
-    var star_ratio=256;
-
-    var star_speed=4;
-
-    var star_speed_save=0;
-
-    var star=new Array(n);
-
-    var color;
-
-    var opacity=0.1;
-
-    var cursor_x=0;
-
-    var cursor_y=0;
-
-    var mouse_x=0;
-
-    var mouse_y=0;
-
-    var canvas_x=0;
-
-    var canvas_y=0;
-
-    var canvas_w=0;
-
-    var canvas_h=0;
-
-    var context;
-
-    var key;
-
-    var ctrl;
-
-    var timeout;
-
-    var fps=0;
-
-    function init()
-
-    {
-
-        var a=0;
-
-        for(var i=0;i<n;i++)
-
-        {
-
-            star[i]=new Array(5);
-
-            star[i][0]=Math.random()*w*2-x*2;
-
-            star[i][1]=Math.random()*h*2-y*2;
-
-            star[i][2]=Math.round(Math.random()*z);
-
-            star[i][3]=0;
-
-            star[i][4]=0;
-
-        }
-
-        var starfield=$i('starfield');
-
-        starfield.style.position='absolute';
-
-        starfield.width=w;
-
-        starfield.height=h;
-
-        context=starfield.getContext('2d');
-
-        context.fillStyle='rgb(0,0,0)';
-
-        context.strokeStyle='rgb(255,255,255)';
-
-        var adsense=$i('adsense');
-
-        adsense.style.left=Math.round((w-728)/2)+'px';
-
-        adsense.style.top=(h-15)+'px';
-
-        adsense.style.width=728+'px';
-
-        adsense.style.height=15+'px';
-
-        adsense.style.display='block';
-
-    }
-
-    function anim()
-
-    {
-
-        mouse_x=cursor_x-x;
-
-        mouse_y=cursor_y-y;
-
-        context.fillRect(0,0,w,h);
-
-        for(var i=0;i<n;i++)
-
-        {
-
-            test=true;
-
-            star_x_save=star[i][3];
-
-            star_y_save=star[i][4];
-
-            star[i][0]+=mouse_x>>4; if(star[i][0]>x<<1) { star[i][0]-=w<<1; test=false; } if(star[i][0]<-x<<1) { star[i][0]+=w<<1; test=false; }
-
-            star[i][1]+=mouse_y>>4; if(star[i][1]>y<<1) { star[i][1]-=h<<1; test=false; } if(star[i][1]<-y<<1) { star[i][1]+=h<<1; test=false; }
-
-            star[i][2]-=star_speed; if(star[i][2]>z) { star[i][2]-=z; test=false; } if(star[i][2]<0) { star[i][2]+=z; test=false; }
-
-            star[i][3]=x+(star[i][0]/star[i][2])*star_ratio;
-
-            star[i][4]=y+(star[i][1]/star[i][2])*star_ratio;
-
-            if(star_x_save>0&&star_x_save<w&&star_y_save>0&&star_y_save<h&&test)
-
-            {
-
-                context.lineWidth=(1-star_color_ratio*star[i][2])*2;
-
-                context.beginPath();
-
-                context.moveTo(star_x_save,star_y_save);
-
-                context.lineTo(star[i][3],star[i][4]);
-
-                context.stroke();
-
-                context.closePath();
-
-            }
-
-        }
-
-        timeout=setTimeout('anim()',fps);
-
-    }
-
-    function move(evt)
-
-    {
-
-        evt=evt||event;
-
-        cursor_x=evt.pageX-canvas_x;
-
-        cursor_y=evt.pageY-canvas_y;
-
-    }
-
-    function key_manager(evt)
-
-    {
-
-        evt=evt||event;
-
-        key=evt.which||evt.keyCode;
-
-        switch(key)
-
-        {
-
-            case 27:
-
-                flag=flag?false:true;
-
-                if(flag)
-
-                {
-
-                    timeout=setTimeout('anim()',fps);
-
-                }
-
-                else
-
-                {
-
-                    clearTimeout(timeout);
-
-                }
-
-                break;
-
-            case 32:
-
-                star_speed_save=(star_speed!=0)?star_speed:star_speed_save;
-
-                star_speed=(star_speed!=0)?0:star_speed_save;
-
-                break;
-
-            case 13:
-
-                context.fillStyle='rgba(0,0,0,'+opacity+')';
-
-                break;
-
-        }
-
-        top.status='key='+((key<100)?'0':'')+((key<10)?'0':'')+key;
-
-    }
-
-    function release()
-
-    {
-
-        switch(key)
-
-        {
-
-            case 13:
-
-                context.fillStyle='rgb(0,0,0)';
-
-                break;
-
-        }
-
-    }
-
-    function mouse_wheel(evt)
-
-    {
-
-        evt=evt||event;
-
-        var delta=0;
-
-        if(evt.wheelDelta)
-
-        {
-
-            delta=evt.wheelDelta/120;
-
-        }
-
-        else if(evt.detail)
-
-        {
-
-            delta=-evt.detail/3;
-
-        }
-
-        star_speed+=(delta>=0)?-0.2:0.2;
-
-        if(evt.preventDefault) evt.preventDefault();
-
-    }
-
-    function start()
-
-    {
-
-        resize();
-
-        anim();
-
-    }
-
-    function resize()
-
-    {
-
-        w=parseInt((url.indexOf('w=')!=-1)?url.substring(url.indexOf('w=')+2,((url.substring(url.indexOf('w=')+2,url.length)).indexOf('&')!=-1)?url.indexOf('w=')+2+(url.substring(url.indexOf('w=')+2,url.length)).indexOf('&'):url.length):get_screen_size()[0]);
-
-        h=parseInt((url.indexOf('h=')!=-1)?url.substring(url.indexOf('h=')+2,((url.substring(url.indexOf('h=')+2,url.length)).indexOf('&')!=-1)?url.indexOf('h=')+2+(url.substring(url.indexOf('h=')+2,url.length)).indexOf('&'):url.length):get_screen_size()[1]);
-
-        x=Math.round(w/2);
-
-        y=Math.round(h/2);
-
-        z=(w+h)/2;
-
-        star_color_ratio=1/z;
-
-        cursor_x=x;
-
-        cursor_y=y;
-
-        init();
-
-    }
-
-    document.onmousemove=move;
-
-    document.onkeypress=key_manager;
-
-    document.onkeyup=release;
-
-    document.onmousewheel=mouse_wheel; if(window.addEventListener) window.addEventListener('DOMMouseScroll',mouse_wheel,false);
-
-</script>
-
-<body onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
-
-<canvas id="starfield" style="background-color:#000000"></canvas>
-
-<div id="adsense" style="position:absolute;background-color:transparent;display:none">
-
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Home</title>
+		<!-- for-mobile-apps -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="keywords" content="" />
+		<script type="application/x-javascript">
+			addEventListener("load", function() {
+				setTimeout(hideURLbar, 0);
+			}, false);
+
+			function hideURLbar() {
+				window.scrollTo(0, 1);
+			}
+		</script>
+		<!-- //for-mobile-apps -->
+		<link href="css/bootstrap.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+		<!-- js -->
+		<script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+		<!-- //js -->
+		<!-- fonts -->
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800'
+		 rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Acme' rel='stylesheet' type='text/css'><!-- //fonts -->
+
+		<!-- start-smoth-scrolling -->
+		<script type="text/javascript" src="js/move-top.js"></script>
+		<script type="text/javascript" src="js/easing.js"></script>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				$(".scroll").click(function(event) {
+					event.preventDefault();
+					$('html,body').animate({
+						scrollTop: $(this.hash).offset().top
+					}, 1000);
+				});
+			});
+		</script>
+		<!-- start-smoth-scrolling -->
+
+		<!-- skills -->
+		<script src="js/pie-chart.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$('#demo-pie-1').pieChart({
+					barColor: '#10A7AF',
+					trackColor: '#fff',
+					lineCap: 'round',
+					lineWidth: 8,
+					onStep: function(from, to, percent) {
+						$(this.element).find('.pie-value').text(Math.round(percent) + '%');
+					}
+				});
+
+				$('#demo-pie-2').pieChart({
+					barColor: '#10A7AF',
+					trackColor: '#fff',
+					lineCap: 'butt',
+					lineWidth: 8,
+					onStep: function(from, to, percent) {
+						$(this.element).find('.pie-value').text(Math.round(percent) + '%');
+					}
+				});
+
+				$('#demo-pie-3').pieChart({
+					barColor: '#10A7AF',
+					trackColor: '#fff',
+					lineCap: 'square',
+					lineWidth: 8,
+					onStep: function(from, to, percent) {
+						$(this.element).find('.pie-value').text(Math.round(percent) + '%');
+					}
+				});
+
+				$('#demo-pie-4').pieChart({
+					barColor: '#10A7AF',
+					trackColor: '#fff',
+					lineCap: 'square',
+					lineWidth: 8,
+					onStep: function(from, to, percent) {
+						$(this.element).find('.pie-value').text(Math.round(percent) + '%');
+					}
+				});
+			});
+		</script>
+		<!-- skills -->
+		<script type="text/javascript" src="js/numscroller-1.0.js"></script>
+
+	</head>
+	<body>
+		<!-- banner -->
+		<div class="header-top">
+			<div class="container">
+				<ul>
+					<li><a class="scroll" href="#about"><span class="glyphicon glyphicon-file" aria-hidden="true"></span>简历</a></li>
+					<li><a class="scroll" href="#emailme"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>邮我</a></li>
+					<li><a href="javascript:window.print()"><span class="glyphicon glyphicon-print" aria-hidden="true"></span>打印</a></li>
+					<li><a href="#portfolioModal9" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal">
+							<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>我的照片</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="header">
+			<div class="container">
+				<div class="col-md-8 header-left">
+					<div class="col-sm-5 pro-pic">
+						<img class="img-responsive" src="images/pic1.jpg" alt=" " />
+					</div>
+					<div class="col-sm-5 pro-text">
+						<h1>陈震泓</h1>
+						<p>Java 工程师</p>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+				<div class="col-md-4 header-right ">
+					<ul class="list-left">
+						<li>邮件:</li>
+						<li>博客:</li>
+						<li>联系电话:</li>
+						<li>地址: </li>
+					</ul>
+					<ul class="list-right">
+						<li><a href="mailto:info@example.com">ZH980705@outlook.com</a></li>
+						<li><a href="mailto:info@example.com">链接已过期..</a></li>
+						<li>130-5934-9680</li>
+						<li>广东省云浮市罗定市围底</li>
+					</ul>
+					<div class="clearfix"></div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+		<!-- //banner -->
+		<!-- about -->
+		<div id="about" class="about">
+			<div class="container">
+				<h3 class="tittle">关于我</h3>
+				<p class="abt-para">我愿意深深地扎入生活，吮尽生活的骨髓，过得扎实，简单，把一切不属于生活的内容剔除得干净利落，把生活逼到绝处，用最基本的形式，简单，简单，再简单... </p>
+			</div>
+			<div class="col-md-6 abt-left ">
+				<h2>Education</h2>
+				<div class="accordion">
+					<div class="accordion-section">
+						<h5><a class="accordion-section-title" href="#accordion-1">
+								<span>2017 - 2021</span> 暨南大学
+								<i class="glyphicon glyphicon-chevron-down"></i>
+								<div class="clearfix"></div>
+							</a></h5>
+						<!-- <div id="accordion-1" class="accordion-section-content">
+									<h6>Honors & Awards</h6>
+									<ul>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">voluptatem accusantium</a></li>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">accusantium doloremque</a></li>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">doloremque laudantium</a></li>
+									</ul>
+								</div> -->
+					</div>
+
+					<div class="accordion-section">
+						<h5><a class="accordion-section-title" href="#accordion-2">
+								<span>2017 - 2019</span> 南方IT学院
+								<i class="glyphicon glyphicon-chevron-down"></i>
+								<div class="clearfix"></div>
+							</a></h5>
+						<!-- <div id="accordion-2" class="accordion-section-content">
+									<h6>Seminars</h6>
+									<ul>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">voluptatem accusantium</a></li>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">accusantium doloremque</a></li>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">doloremque laudantium</a></li>
+									</ul>
+								</div> -->
+					</div>
+
+					<div class="accordion-section">
+						<h5><a class="accordion-section-title" href="#accordion-3">
+								<span>2014 - 2017</span> 罗定第一中学
+								<i class="glyphicon glyphicon-chevron-down"></i>
+								<div class="clearfix"></div>
+							</a></h5>
+						<!-- <div id="accordion-3" class="accordion-section-content">
+									<h6>Competitions</h6>
+									<ul>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">voluptatem accusantium</a></li>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">accusantium doloremque</a></li>
+										<li><span class="glyphicon glyphicon-ok" aria-hidden="true"></span><a href="#">doloremque laudantium</a></li>
+									</ul>
+								</div> -->
+					</div>
+
+
+				</div>
+				<script>
+					jQuery(document).ready(function() {
+								function close_accordion_section() {
+									jQuery('.accordion .accordion-section-title').removeClass('active');
+									jQuery('.accordion .accordion-section-content').slideUp(300).removeClass('open');
+								}
+
+								jQuery('.accordion-section-title').click(function(e) {
+									// Grab current anchor value
+									var currentAttrValue = jQuery(this).attr('href');
+
+									if(jQuery(e.target).is('.active')) {
+										close_accordion_section();
+									}else {
+										close_accordion_section();
+
+										// Add active class to section title
+										jQuery(this).addClass('active');
+										// Open up the hidden content panel
+										jQuery('.accordion ' + currentAttrValue).slideDown(300).addClass('open'); 
+									}
+
+									e.preventDefault();
+								});
+							});
+				</script>
+			</div>
+			<div class="col-md-6 abt-right ">
+				<div class="col-sm-4 abt-gd-left text-center">
+					<div id="demo-pie-1" class="pie-title-center" data-percent="30"> <span class="pie-value"></span> </div>
+					<h4>HTML</h4>
+				</div>
+
+				<div class="col-sm-4 abt-gd-left text-center">
+					<div id="demo-pie-3" class="pie-title-center" data-percent="70"> <span class="pie-value"></span> </div>
+					<h4>Java 语言</h4>
+				</div>
+				<div class="col-sm-4 abt-gd-left text-center">
+					<div id="demo-pie-4" class="pie-title-center" data-percent="15"> <span class="pie-value"></span> </div>
+					<h4>UI 设计</h4>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<!-- about -->
+		<!-- education -->
+		<div class="employment">
+			<div class="container">
+				<h3 class="tittle ">项目经历</h3>
+				<p class="abt-para ">实践是检验真理的唯一标准，我觉得编程也一样~</p>
+				<div class="col-md-6 employ-left">
+					<h4>01</h4>
+				</div>
+				<div class="col-md-6 employ-right">
+					<h5><span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>超市管理系统</h5>
+					<p>		
+						开发环境：VisualStudio2015+SQLServer2005
+						项目描述：后台数据库管理超市人员、物资;前台界面实现超市的信息查询、销售量等。
+						开发团队:小组开发，共四位成员。
+						角色定位:项目组长，负责软件的界面设计、程序的编写以及后台数据库的设计，
+						协调小组成员的设计、开发工作，参与测试。
+						项目总结:懂得了交流沟通是团队的重要桥梁，学会了听取分析别人的建议，业务分析欠缺
+					</p>
+				</div>
+				<div class="col-md-6 employ-left2">
+					<h5>挖宝网<span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span></h5>
+					<p>
+						开发环境：Eclipse+SQLServer2005
+						项目描述：后台数据库管理手机种类、上下架情况 ;前台界面实现手机的信息查询等。
+						开发团队:小组开发，共四位成员。
+						角色定位:项目组员，负责网站前台与后台交互、数据库表的设计，
+						项目总结:学会遇到困难时怎么解决问题的方式；业务分析欠缺
+					</p>
+				</div>
+				<div class="col-md-6 employ-right2">
+					<h4>02</h4>
+				</div>
+				<div class="col-md-6 employ-left ">
+					<h4>03</h4>
+				</div>
+				<div class="col-md-6 employ-right">
+					<h5><span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>个人博客网</h5>
+					<p> 开发环境：WordPress+Tomcat+XAMPP 项目描述：前台可以浏览发表的文章、点赞、评论、分享；后台可以进行文章的发表、评论的批改。
+						项目总结:前端布局有待提高，业务逻辑
+					</p>
+				</div>
+				<div class="col-md-6 employ-left2">
+					<h5>网上订餐系统<span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span></h5>
+					<p>正在开发中···· </p>
+				</div>
+				<div class="col-md-6 employ-right2">
+					<h4>04</h4>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+		<!-- education -->
+		<!-- num scroller -->
+		<div class="num-scroller">
+			<div class="container">
+				<h3 class="tittle ">编程之旅</h3>
+				<div class="col-md-3 capabil-grid text-center">
+
+					<div class='numscroller numscroller-big-bottom' data-slno='1' data-min='0' data-max='3' data-delay='.5'
+					 data-increment="100">3</div>
+					<p>完成项目</p>
+				</div>
+				<div class="col-md-3 capabil-grid text-center">
+
+					<div class='numscroller numscroller-big-bottom' data-slno='1' data-min='0' data-max='500' data-delay='.5'
+					 data-increment="5">500</div>
+					<p>测试</p>
+				</div>
+				<div class="col-md-3 capabil-grid text-center">
+
+					<div class='numscroller numscroller-big-bottom' data-slno='1' data-min='0' data-max='25000' data-delay='.5'
+					 data-increment="100">25000</div>
+					<p>代码量</p>
+				</div>
+				<div class="col-md-3 capabil-grid text-center">
+					<div class='numscroller numscroller-big-bottom' data-slno='1' data-min='0' data-max='100000' data-delay='.5'
+					 data-increment="99">100000</div>
+					<p>目标</p>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+		<!-- //num scroller -->
+		<!-- portfolio -->
+		<!-- <div class="portfolio">
+	<div class="container">
+		<h3 class="tittle ">就这么多</h3>
+			<div class="portfolio-grids">
+				<script src="js/easyResponsiveTabs.js" type="text/javascript"></script>
+				<script type="text/javascript">
+									$(document).ready(function () {
+										$('#horizontalTab').easyResponsiveTabs({
+											type: 'default', //Types: default, vertical, accordion           
+											width: 'auto', //auto or any width like 600px
+											fit: true   // 100% fit in a container
+										});
+									});
+									
+				</script>
+				<div class="sap_tabs">
+					<div id="horizontalTab" style="display: block; width: 100%; margin: 0px;">
+						<ul class="resp-tabs-list">
+							<li class="resp-tab-item" aria-controls="tab_item-0" role="tab"><span></span></li> 
+							<li class="resp-tab-item" aria-controls="tab_item-1" role="tab"><span></span></li> 
+							<li class="resp-tab-item" aria-controls="tab_item-2" role="tab"><span>Graphic Design</span></li> 
+						</ul>				  	 
+						<div class="resp-tabs-container">
+							<div class="tab-1 resp-tab-content" aria-labelledby="tab_item-0">
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal1" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic4.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal3" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic5.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal2" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic9.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal4" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic6.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd yes_marg ">
+									<div class="thumb">
+										<a href="#portfolioModal5" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic10.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd yes_marg ">
+									<div class="thumb">
+										<a href="#portfolioModal6" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic11.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd yes_marg ">
+									<div class="thumb">
+										<a href="#portfolioModal7" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic13.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd yes_marg ">
+									<div class="thumb">
+										<a href="#portfolioModal8" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic14.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="tab-1 resp-tab-content" aria-labelledby="tab_item-1">
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal5" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic10.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd  ">
+									<div class="thumb">
+										<a href="#portfolioModal6" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic11.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal7" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic13.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="tab-1 resp-tab-content" aria-labelledby="tab_item-2">
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal2" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic9.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd ">
+									<div class="thumb">
+										<a href="#portfolioModal4" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic6.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd">
+									<div class="thumb">
+										<a href="#portfolioModal5" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic10.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="col-md-3 team-gd">
+									<div class="thumb">
+										<a href="#portfolioModal6" class="portfolio-link b-link-diagonal b-animate-go" data-toggle="modal"><img src="images/pic11.jpg" alt="">
+										<div class="team_pos">
+											<ul>
+												<li>
+													<div class="morph pic fb_icon1">
+													</div>
+												</li>
+											</ul>
+										</div>
+										</a>
+									</div>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+	</div>
+</div> -->
+		<!-- //portfolio -->
+		<!-- more skills -->
+		<div class="more">
+			<div class="container">
+				<h3 class="tittle ">技能</h3>
+				<div class="col-md-6 skill-left ">
+					<div class="progress">
+						<div class="progress-bar progress-bar-success" style="width: 30%">数据库
+							<span class="sr-only">35% Complete (success)</span>
+						</div>
+						<div class="progress-bar progress-bar-warning " style="width: 40%">
+							<span class="sr-only"></span>
+						</div>
+						<p>65%</p>
+						<div class="clearfix"></div>
+					</div>
+					<div class="progress">
+						<div class="progress-bar progress-bar-success1" style="width: 30%">JAVA 语言
+							<span class="sr-only">35% Complete (success)</span>
+						</div>
+						<div class="progress-bar progress-bar-warning1" style="width: 20%">
+							<span class="sr-only"></span>
+						</div>
+						<p>70%</p>
+						<div class="clearfix"></div>
+					</div>
+					<div class="progress">
+						<div class="progress-bar progress-bar-success3" style="width: 30%">CSS
+							<span class="sr-only">35% Complete (success)</span>
+						</div>
+						<div class="progress-bar progress-bar-warning3 " style="width: 55%">
+							<span class="sr-only"></span>
+						</div>
+						<p>50%</p>
+						<div class="clearfix"></div>
+					</div>
+					<div class="progress">
+						<div class="progress-bar progress-bar-success2" style="width: 30%">HTML
+							<span class="sr-only">35% Complete (success)</span>
+						</div>
+						<div class="progress-bar progress-bar-warning2" style="width: 55%">
+							<span class="sr-only"></span>
+						</div>
+						<p>85%</p>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="progress no-marg">
+						<div class="progress-bar progress-bar-success4" style="width: 30%">SSM框架
+							<span class="sr-only">35% Complete (success)</span>
+						</div>
+						<div class="progress-bar progress-bar-warning4" style="width: 40%">
+							<span class="sr-only"></span>
+						</div>
+						<p>70%</p>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="col-md-6 skill-right ">
+					<div class="scrollbar scrollbar1">
+						<div class="more-gds">
+							<div class="col-sm-3 more-left">
+								<span class="glyphicon glyphicon-scissors" aria-hidden="true"></span>
+							</div>
+							<div class="col-sm-9 more-right">
+								<h4>Vue 框架</h4>
+								<p>掌握基本语法，进行数据交互</p>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						<div class="more-gds yes_marg">
+							<div class="col-sm-9 more-right2">
+								<h4>APP 应用</h4>
+								<p>利用过HBuilder 开发过简单的知乎日报</p>
+							</div>
+							<div class="col-sm-3 more-left">
+								<span class="glyphicon glyphicon-phone" aria-hidden="true"></span>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						<div class="more-gds yes_marg">
+							<div class="col-sm-3 more-left">
+								<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+							</div>
+							<div class="col-sm-9 more-right">
+								<h4>WordPress</h4>
+								<p>使用过XAMPP + Tomcat 8 搭建个人博客</p>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						<div class="more-gds yes_marg">
+							<div class="col-sm-9 more-right2">
+								<h4>JPress</h4>
+								<p>使用用Maven + Tomcat 8 进行个人博客的开发 </p>
+							</div>
+							<div class="col-sm-3 more-left">
+								<span class="glyphicon glyphicon-send" aria-hidden="true"></span>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+		<!-- more skills -->
+		<!-- contact -->
+		<div id="emailme" class="contact">
+			<div class="container">
+				<h3 class="tittle">联络</h3>
+				<div class="col-md-6 contact-left ">
+					<div class="horizontal-tab">
+						<ul class="nav nav-tabs">
+							<li class="active"><a href="#tab1" data-toggle="tab" aria-expanded="false">联系我</a></li>
+							<li class=""><a href="#tab2" data-toggle="tab" aria-expanded="false">雇用我</a></li>
+						</ul>
+						<div class="tab-content">
+							<div class="tab-pane active in" id="tab1">
+								<div class="contact-form">
+									<ul>
+										<li><i class="glyphicon glyphicon-map-marker" aria-hidden="true"></i>南方IT学院 <span>B栋502</span></li>
+										<li><i class="glyphicon glyphicon-envelope" aria-hidden="true"></i><a href="mailto:ZH980705@outlook.com">ZH980705@outlook.com</a></li>
+										<li><i class="glyphicon glyphicon-earphone" aria-hidden="true"></i>+13059349680</li>
+									</ul>
+									<form>
+										<input type="text" value="名字" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '名字';}"
+										 required="">
+										<input type="email" value="Email" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Email';}"
+										 required="">
+										<textarea type="text" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Message...';}"
+										 required="">描述...</textarea>
+										<input type="submit" value="提交">
+									</form>
+								</div>
+
+							</div>
+							<div class="tab-pane" id="tab2">
+								<div class="contact-form">
+									<form>
+										<input type="text" value="名字" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '名字';}"
+										 required="">
+										<input type="email" value="Email" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Email';}"
+										 required="">
+										<textarea type="text" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Message...';}"
+										 required="">描述...</textarea>
+										<input id="uploadFile" placeholder="Choose File" disabled="disabled" />
+										<div class="fileUpload btn btn-primary">
+											<span>文件</span>
+											<input id="uploadBtn" type="file" class="upload" />
+										</div>
+										<input type="submit" value="发送">
+									</form>
+									<script>
+										document.getElementById("uploadBtn").onchange = function() {
+											document.getElementById("uploadFile").value = this.value;
+										};
+									</script>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+
+			</div>
+		</div>
+		<!-- //contact -->
+		<!-- for bootstrap working -->
+		<script src="js/bootstrap.js"></script>
+		<!-- //for bootstrap working -->
+		<!-- <div class="portfolio-modal modal fade slideanim" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic4.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-</body>
-
-</html><body>
-
-<div id="container"><div id="output"></div></div>
-<div class="cs">
-<p align="center"><a target="_blank" style="  text-decoration:none;font-size: 20px;  color:#fff;    font-family: 微软雅黑;">网站维护中，请稍后访问</a></p><br><br><br>
-<p align="center"><a  style="  text-decoration:none;font-size: 50px;      font-family: 微软雅黑;">&nbsp;</a></p><br><br><br>
-<img src="img/logo.png" id="logo"><br>
-<p align="center"><a  style="  text-decoration:none;font-size: 50px;      font-family: 微软雅黑;">&nbsp;</a></p><br><br><br>
-<p align="center"><a  style="  text-decoration:none;font-size: 50px;   color:aqua;   font-family: 微软雅黑;">网站维护中，请稍后访问</a></p><br><br><br>
-<p align="center"><a  style="  text-decoration:none;font-size: 50px;     font-family: 微软雅黑;">&nbsp;</a></p><br><br><br>
-<a href="#" class="button button-glow button-rounded button-caution" target="_blan"><i class="fa fa-star"></i>点了没用</a>
-<a href="#" class="button button-glow button-rounded button-highlight" target="_blan"><i class="fa fa-header"></i>点了没用</a>
-<a href="#" class="button button-glow button-rounded button-royal" target="_blan"><i class="fa fa-qq"></i>点了没用</a>
-<a href="#" class="button button-glow button-rounded button-action" target="_blan"><i class="fa fa-qq"></i>点了没用</a>
-
-<!-- <a href="http://user.qzone" class="button button-glow button-rounded button-highlight" target="_blank这个标记在新的页面打开"><i class="fa fa-header"></i>www.0du666.com</a> -->
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic9.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic5.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic6.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic10.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic11.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal7" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic13.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal8" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+						<h3>Image-Title</h3>
+                        <img src="images/pic14.jpg" class="img-responsive img-centered" alt="">
+                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portfolio-modal modal fade slideanim" id="portfolioModal9" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-content port-modal">
+        <div class="close-modal" data-dismiss="modal">
+            <div class="lr">
+                <div class="rl"></div>
+            </div>
+        </div>
+        <div class="container">
+			<div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <div class="modal-body">
+                        <img src="images/pic1.jpg" class="img-responsive img-centered" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ -->
+		<!--scrolling js-->
+		<script src="js/jquery.nicescroll.js"></script>
+		<script src="js/scripts.js"></script>
+		<!--//scrolling js-->
+		<!-- smooth scrolling -->
+		<script type="text/javascript">
+			$(document).ready(function() {
+				/*
+					var defaults = {
+					containerID: 'toTop', // fading element id
+					containerHoverID: 'toTopHover', // fading element hover id
+					scrollSpeed: 1200,
+					easingType: 'linear' 
+					};
+				*/
+				$().UItoTop({
+					easingType: 'easeOutQuart'
+				});
+			});
+		</script>
+		<a href="#" id="toTop" style="display: block;"> <span id="toTopHover" style="opacity: 1;"> </span></a>
+		<!-- //smooth scrolling -->
 
-<audio autoplay="autoplay" loop>
-	<source src="http://boscdn.djduoduo.com/dj/580/sujicha.aac" type="audio/mpeg">
-</audio>
-</body>
-
-<style type="text/css">body, a, a:link{cursor:url(./cur117.cur), default;} a:hover {cursor:url(./cur116.cur),wait;}</style>
+	</body>
+</html>
